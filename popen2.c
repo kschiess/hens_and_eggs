@@ -10,7 +10,7 @@ void* read_from_stdout(void* param) {
   
   int len; 
   while ((len=read(stdout, buffer, 1024)) > 0) {
-    printf("got data (w)...\n");
+    printf("got %d bytes of data (w)...\n", len);
     write(STDOUT_FILENO, buffer, len); 
   }
   
@@ -46,21 +46,20 @@ int main( int argc, const char* argv[] ) {
   if (0 == child) {
     /* Inside child process */
     printf("Running %s in child...\n", program_name);
-    sleep(10);
     
     // close parts of the pipe childout and childin
     close(stdout[0]); close(stdin[1]);
     
     dup2(stdout[1], STDOUT_FILENO);     
+    dup2(stdout[1], STDERR_FILENO);
     dup2(stdin[0], STDIN_FILENO); 
-
-    // we don't use these anymore.
-    close(stdout[1]); close(stdin[0]);
     
-    printf("testing...\n");
+    // we don't use these anymore.
+    close(stdout[1]); close(stdin[0]);    
     
     // execute the child program
-    execlp("/opt/local/bin/bash", "-c", "ls", NULL);
+    // execlp("ls", "ls", NULL);
+    execlp("svnserve", "svnserve", "-t", NULL);
     
     perror("execlp failed");
   }
@@ -85,4 +84,7 @@ int main( int argc, const char* argv[] ) {
   if (waitpid(0, &child_stat, 0) < 0) {
     perror("waitpid");
   }
+  
+  // wait a little longer, until the buffers are cleared.
+  sleep(2);
 }
