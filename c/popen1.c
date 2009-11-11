@@ -7,9 +7,11 @@ int main( int argc, const char* argv[] ) {
   int status;
   char path[PATH_MAX];
 
-  fp = popen("svnserve -t", "r");
+  fp = popen("svnserve -t", "r+");
   if (fp == NULL)
     printf("fp == NULL");
+    
+  fwrite("()\n", sizeof(char), 3, fp);
   
   while (fread(path, sizeof(char), PATH_MAX, fp) > 0)
     printf("%s", path);
