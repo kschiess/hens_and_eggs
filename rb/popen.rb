@@ -8,6 +8,7 @@ def thread
   end.abort_on_exception = true
 end
 
+# This ALMOST works with ruby 1.8 and completely works with ruby 1.9
 popen4('svnserve -t') do |pid, stdin, stdout, stderr|
   thread do    
     while not stdout.eof?
@@ -20,5 +21,3 @@ popen4('svnserve -t') do |pid, stdin, stdout, stderr|
     end
   end
 end
-
-sleep 2
