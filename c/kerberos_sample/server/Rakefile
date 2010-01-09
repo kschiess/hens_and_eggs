@@ -1,0 +1,14 @@
+
+require 'rake/clean'
+
+CLEAN << 'sim_server.o' << 'sim_server'
+
+file 'sim_server.o' => 'sim_server.c' do
+  sh 'gcc -DHAVE_CONFIG_H -I./.. -c sim_server.c'
+end
+
+file 'sim_server' => 'sim_server.o' do 
+  sh 'gcc sim_server.o -o sim_server -lkrb5 -lk5crypto -lcom_err -lkrb5support  -lresolv  -ldl'
+end
+
+task :default => 'sim_server'

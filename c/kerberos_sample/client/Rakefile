@@ -1,0 +1,14 @@
+
+require 'rake/clean'
+
+CLEAN << 'sim_client.o' << 'sim_client'
+
+file 'sim_client.o' => 'sim_client.c' do
+  sh 'gcc -DHAVE_CONFIG_H -I./.. -c sim_client.c'
+end
+
+file 'sim_client' => 'sim_client.o' do 
+  sh 'gcc sim_client.o -o sim_client -lkrb5 -lk5crypto -lcom_err -lkrb5support  -lresolv  -ldl'
+end
+
+task :default => 'sim_client'
