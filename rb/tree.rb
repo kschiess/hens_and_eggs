@@ -229,7 +229,8 @@ puts
   'g', 'a', 
   'g', 'c', 
   
-  'c', 'h'
+  'c', 'h', 
+  'c', 'b'
 ].each_slice(2) do |src, tgt|
   table = original_tree.to_table
   
