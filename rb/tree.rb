@@ -82,6 +82,9 @@ class Node
   def include?(pot_child)
     pot_child.l >= self.l && pot_child.r <= self.r
   end
+  def child?(pot_child)
+    pot_child.l > self.l && pot_child.r < self.r
+  end
   
   def each(&block)
     subnodes.each(&block)
@@ -95,6 +98,7 @@ class Table
   def each(&block)
     @table.each(&block)
   end
+
   # Allows to map and modify the table at the same time. Yields each node
   # in succession to the block; the result of the block replaces the node. 
   # You may also modify the node in place, as long as you still return it. 
@@ -111,16 +115,15 @@ class Table
   #
   def replace(&block)
     delete_list = []
-    @table.map!(&block)
-    @table.compact!
+    @table = @table.
+      map(&block).
+      compact.                    # remove nils
+      sort_by { |node| node.l }   # restore order
   end
   
   def remove(name)
     tgt = find(name)
     d = tgt.r - tgt.l + 1
-    
-    # Call the given block if a boundary is to the right of tgt.r
-    right = lambda { |cur| yield if cur>tgt.r }
     
     replace do |any|
       if tgt.include? any
@@ -130,6 +133,51 @@ class Table
         any.r -= d if any.r > tgt.r
         any
       end
+    end
+  end
+
+  def move(from_name, to_name)
+    from = find(from_name).dup
+    to   = find(to_name).dup
+    
+    fail "cannot move inside itself" if from.include?(to)
+    # fail "already there" if to.include?(from)
+    
+    # For removal
+    d = from.r - from.l + 1
+    
+    # For insertion
+    i = -from.l+to.r
+    # Correct insertion for cases where to.r is to the right of from, meaning
+    # that we need to remove from first.
+    i -= d if to.r>from.r 
+
+    replace do |any|
+      oany = any.dup
+      
+      print "#{oany.name} #{oany.l},#{oany.r}"
+      
+      if from.include? any
+        any.l += i
+        any.r += i
+        puts
+      else
+        print "-> #{any.l},#{any.r}"
+
+        # Removing from in its old place
+        any.l -= d if oany.l > from.r
+        any.r -= d if oany.r > from.r
+      
+        print "-> #{any.l},#{any.r}"
+
+        # Inserting from in its new place
+        any.l += d if oany.l >= to.r
+        any.r += d if oany.r >= to.r
+      
+        puts "-> #{any.l},#{any.r}"
+      end
+      
+      any
     end
   end
   
@@ -142,7 +190,7 @@ class Table
   end
 
   def find(name)
-    @table.find { |node| node.name==name }
+    @table.find { |node| node.name==name.upcase }
   end
 
   def nodes
@@ -153,30 +201,43 @@ end
 def Node(name, *subnodes)
   Node.new(name, *subnodes)
 end
-
-tree = Node('a', 
-  Node('b', 
-    Node('g'), 
-    Node('h')), 
-  Node('c', 
-    Node('e'), 
-    Node('f')))
+def original_tree
+  tree = Node('a', 
+    Node('b', 
+      Node('g'), 
+      Node('h')), 
+    Node('c', 
+      Node('e'), 
+      Node('f')))
+  tree.label
+  
+  tree
+end
   
 puts "Tree: "
-tree.label
-puts tree
+puts original_tree
 puts
 
 puts "Table initially:"
-table = tree.to_table
+table = original_tree.to_table
 puts table
 puts
 
-puts "Removing 'G'"
-table.remove('G')
-puts table
-puts
+[
+  'g', 'e', 
+  'g', 'b', 
+  'g', 'a', 
+  'g', 'c', 
+  
+  'c', 'h'
+].each_slice(2) do |src, tgt|
+  table = original_tree.to_table
+  
+  puts "Moving nodes around... (#{src} -> #{tgt})"
+  table.move(src, tgt)
 
-puts "Tree view"
-puts Node.construct(table.nodes)
-puts
+  puts "Tree view"
+  puts Node.construct(table.nodes)
+  puts  
+end
+
