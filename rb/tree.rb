@@ -8,7 +8,6 @@ class Node
     current = nil
     
     loop do
-      last = current
       current = nodes.shift
       break unless current
       
@@ -16,17 +15,14 @@ class Node
       cons.l = current.l
       cons.r = current.r
       
-      if !last
+      if stack.empty?
         stack.push cons
-      elsif last.include?(current)
-        stack.last.subnodes << cons
-        stack.push cons
-      else
+      else 
         until stack.last.include?(current)
           stack.pop
         end
-        # Assert: stack.last should contain current
         stack.last.subnodes << cons
+        stack.push cons
       end
     end
     
