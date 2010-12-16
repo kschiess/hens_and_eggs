@@ -1,40 +1,38 @@
 
-require 'zmq'
+require 'ffi-rzmq'
 
-# ctx = ZMQ::Context.new
-#  
-# # create publisher socket, and publish to two pipes!
-# pub = ctx.socket(ZMQ::PUB)
-# pub.bind('tcp://127.0.0.1:5000')
-# pub.bind('inproc://some.pipe')
-#  
-# # generate random message, ex: '1 9'
-# Thread.new { loop { pub.send [rand(2), rand(10)].join(' ') } }
-#  
-# # create a consumer, and listen for messages whose key is '1'
-# sub = ctx.socket(ZMQ::SUB)
-# sub.connect('inproc://some.pipe')
-# sub.setsockopt(ZMQ::SUBSCRIBE, '1')
-#  
-# loop { p sub.recv } # => "1 9" ...
-
-3.times do
-  fork do
-    sleep 1
+1.times do
+  pid = fork do
     puts "Sending message in #{Process.pid}..."
     ctx = ZMQ::Context.new
     source = ctx.socket(ZMQ::PUSH)
-    source.connect('tcp://*:5555')
-    source.send 'fubber'
+    source.connect('ipc://pipe')
+    
+    n = 0 
+    loop do
+      n+= 1
+      source.send_string 'fubber ' + n.to_s
+      
+      break if n == 10
+    end
+    source.send_string 'done'
     puts "Done."
+    
+    exit 
   end
+  
+  Process.detach pid
 end
 
 ctx = ZMQ::Context.new
 sink = ctx.socket(ZMQ::PULL)
-sink.bind('tcp://*:5555')
+sink.bind('ipc://pipe')
 
 puts "Receiving messages"
-while msg=sink.recv
+while msg=sink.recv_string
   p msg
+  break if msg == 'done'
 end
+
+puts "Stopping server!"
+sink.close
