@@ -1,0 +1,25 @@
+
+build_tasks = []
+
+def base(name)
+  File.basename(name, '.go')
+end
+
+def executable(name)
+  base(name)
+end
+
+def object(name)
+  base(name) + ".6"
+end
+
+Dir['*.go'].each do |name|
+  build_tasks << file(executable(name) => name) do
+    sh "6g #{name}"
+    sh "6l -o #{executable(name)} #{object(name)}"
+  end
+end
+
+desc "Builds all .go files in the directory"
+task :build_all => build_tasks
+task :default => :build_all
