@@ -12,4 +12,8 @@ func main() {
   for ;false; {
     fmt.Println("Pre and post statements can be empty.")
   }
+  
+  for true {
+    fmt.Println("This loop is endless. Note the missing ;.")
+  }
 }
