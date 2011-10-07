@@ -16,4 +16,13 @@ func main() {
   for true {
     fmt.Println("This loop is endless. Note the missing ;.")
   }
+  
+  for ;; {
+    // endless loop as well.
+  }
+  
+  for {
+    // go has a few ways to express endless loops. Wondering where that comes
+    // from or if this is even a feature. 
+  }
 }
