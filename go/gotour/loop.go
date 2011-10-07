@@ -8,4 +8,8 @@ func main() {
     sum += i
   }
   fmt.Println(sum)
+  
+  for ;false; {
+    fmt.Println("Pre and post statements can be empty.")
+  }
 }
