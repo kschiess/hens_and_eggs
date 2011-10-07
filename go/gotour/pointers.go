@@ -12,4 +12,8 @@ func main() {
   q := &p
   q.X = 1e9
   fmt.Println(p)
+  
+  v := new(Vertex)
+  v.X = 1
+  fmt.Println(v)
 }
