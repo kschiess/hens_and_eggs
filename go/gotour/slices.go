@@ -13,8 +13,12 @@ func main() {
 
   // missing high index implies len(s)
   fmt.Println("p[4:] ==", p[4:])
+
+  // This panics: nice stack traces!
+  // for i:=0; i<len(p)+1; i++ {
+  //   fmt.Println(p[i])
+  // } 
   
-  for i:=0; i<len(p)+1; i++ {
-    fmt.Println(p[i])
-  } 
+  v := new([10]int)
+  fmt.Println(v)
 }
